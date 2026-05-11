@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Secure Forge Technologies</title>
+  <link rel="icon" type="image/png" href="./logo.png">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
@@ -42,10 +43,15 @@
     .header.scrolled { height:62px; background:rgba(13,27,62,0.97); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); }
     .header-logo { display:flex; align-items:center; gap:13px; cursor:pointer; text-decoration:none; }
     .header-logo-icon {
-      width:46px; height:46px;
-      background:linear-gradient(135deg,var(--orange),var(--orange-dark));
-      border-radius:11px; display:flex; align-items:center; justify-content:center;
-      font-size:1.35rem; color:white; box-shadow:0 4px 15px rgba(244,121,32,0.45);
+      width:46px;
+      height:46px;
+      border-radius:11px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      background:white;
+      box-shadow:0 4px 15px rgba(0,0,0,0.18);
       transition:transform 0.3s ease;
     }
     .header-logo:hover .header-logo-icon { transform:rotate(15deg) scale(1.1); }
@@ -343,7 +349,19 @@ function Header({ page, setPage }) {
     <>
       <header className={`header ${scrolled?'scrolled':''}`}>
         <div className="header-logo" onClick={() => nav('home')}>
-          <div className="header-logo-icon"><i className="fa-solid fa-shield-halved"/></div>
+          <div className="header-logo-icon">
+  <img 
+    src="./logo.png"
+    alt="Secure Forge Technologies Logo"
+    style={{
+      width: "100%",
+      padding: "2px",
+      height: "100%",
+      objectFit: "contain",
+      borderRadius: "11px"
+    }}
+  />
+</div>
           <div>
             <div className="header-company-name"><span>Secure</span> Forge Technologies</div>
             {/* <div className="header-company-sub">Digital Solutions &amp; Security</div> */}
@@ -398,7 +416,19 @@ function Footer({ setPage }) {
       <div className="footer-main">
         <div>
           <div style={{display:'flex',alignItems:'center',gap:13,marginBottom:'1rem'}}>
-            <div className="header-logo-icon"><i className="fa-solid fa-shield-halved"/></div>
+            <div className="header-logo-icon">
+  <img 
+    src="./logo.png"
+    alt="Secure Forge Technologies Logo"
+    style={{
+      width: "100%",
+      padding: "2px",
+      height: "100%",
+      objectFit: "contain",
+      borderRadius: "11px"
+    }}
+  />
+</div>
             <div>
               <div className="header-company-name"><span>Secure</span> Forge Technologies</div>
               <div className="header-company-sub">Digital Solutions &amp; Security</div>
