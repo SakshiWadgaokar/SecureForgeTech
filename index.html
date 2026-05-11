@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Secure Forge Technologies</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --navy:#0d1b3e; --navy-light:#1a2f5e;
+      --orange:#f47920; --orange-light:#ff9a45; --orange-dark:#d4620a;
+      --white:#ffffff; --gray-light:#f5f7fa; --text-dark:#1a1a1a;
+      --font:'Times New Roman',Times,serif;
+    }
+    html { scroll-behavior:smooth; }
+    body { font-family:var(--font); background:var(--white); color:var(--text-dark); overflow-x:hidden; }
+
+    /* KEYFRAMES */
+    @keyframes fadeInUp    { from{opacity:0;transform:translateY(40px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeInLeft  { from{opacity:0;transform:translateX(-40px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes fadeInRight { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes float       { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+    @keyframes waPulse     { 0%,100%{box-shadow:0 0 0 0 rgba(37,211,102,0.5)} 50%{box-shadow:0 0 0 14px rgba(37,211,102,0)} }
+    @keyframes shimmer     { 0%{background-position:-200% center} 100%{background-position:200% center} }
+    @keyframes glowPulse   { 0%,100%{text-shadow:0 0 10px rgba(244,121,32,0.4)} 50%{text-shadow:0 0 32px rgba(244,121,32,0.9)} }
+    @keyframes kenburns    { from{transform:scale(1.07)} to{transform:scale(1.0)} }
+    @keyframes slideDown   { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
+
+    /* HEADER */
+    .header {
+      position:fixed; top:0; left:0; right:0; z-index:1000;
+      background:var(--navy);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 2.5rem; height:72px;
+      box-shadow:0 2px 30px rgba(0,0,0,0.45);
+      transition:all 0.3s ease;
+    }
+    .header.scrolled { height:62px; background:rgba(13,27,62,0.97); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); }
+    .header-logo { display:flex; align-items:center; gap:13px; cursor:pointer; text-decoration:none; }
+    .header-logo-icon {
+      width:46px; height:46px;
+      background:linear-gradient(135deg,var(--orange),var(--orange-dark));
+      border-radius:11px; display:flex; align-items:center; justify-content:center;
+      font-size:1.35rem; color:white; box-shadow:0 4px 15px rgba(244,121,32,0.45);
+      transition:transform 0.3s ease;
+    }
+    .header-logo:hover .header-logo-icon { transform:rotate(15deg) scale(1.1); }
+    .header-company-name { font-family:var(--font); font-weight:700; font-size:1.4rem; color:var(--white); letter-spacing:0.4px; line-height:1.1; }
+    .header-company-name span { color:var(--orange); }
+    .header-company-sub { font-size:0.68rem; color:rgba(255,255,255,0.55); letter-spacing:2.5px; text-transform:uppercase; }
+    .header-nav { display:flex; align-items:center; gap:2rem; }
+    .nav-link {
+      color:rgba(255,255,255,0.8); font-family:var(--font); font-size:1.08rem;
+      text-decoration:none; position:relative; padding:4px 0;
+      transition:all 0.3s ease; cursor:pointer;
+    }
+    .nav-link::after { content:''; position:absolute; bottom:-2px; left:0; width:0; height:2px; background:white; transition:width 0.3s ease; }
+    .nav-link:hover, .nav-link.active { color:white; text-shadow:0 0 14px rgba(255,255,255,0.85); }
+    .nav-link:hover::after, .nav-link.active::after { width:100%; }
+    .header-social { display:flex; align-items:center; gap:1.25rem; margin-left:1.2rem; }
+    .header-social a { color:rgba(255,255,255,0.7); font-size:1.12rem; transition:all 0.3s ease; display:flex; }
+    .header-social a:hover { color:white; transform:translateY(-3px) scale(1.2); text-shadow:0 0 14px rgba(255,255,255,0.85); }
+    .mobile-menu-btn { display:none; background:none; border:none; color:white; font-size:1.5rem; cursor:pointer; }
+
+    /* HERO SLIDER */
+    .hero { min-height:100vh; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; padding-top:72px; }
+    .hero-slides { position:absolute; inset:0; z-index:0; }
+    .hero-slide {
+      position:absolute; inset:0;
+      background-size:cover; background-position:center center;
+      opacity:0; transition:opacity 1.5s cubic-bezier(0.4,0,0.2,1);
+      transform:scale(1.07);
+    }
+    .hero-slide.active { opacity:1; animation:kenburns 9s ease-in-out forwards; }
+    .hero-slide::after {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(135deg,rgba(13,27,62,0.78) 0%,rgba(13,27,62,0.58) 50%,rgba(0,0,0,0.48) 100%);
+    }
+    .hero-dots { position:absolute; bottom:2.2rem; left:50%; transform:translateX(-50%); display:flex; gap:10px; z-index:5; }
+    .hero-dot { width:11px; height:11px; border-radius:50%; background:rgba(255,255,255,0.35); border:none; cursor:pointer; transition:all 0.4s ease; padding:0; }
+    .hero-dot.active { background:var(--orange); width:30px; border-radius:6px; box-shadow:0 0 12px rgba(244,121,32,0.7); }
+    .hero-bg-dots { position:absolute; inset:0; z-index:1; opacity:0.04; background-image:radial-gradient(circle,white 1px,transparent 1px); background-size:40px 40px; }
+    .hero-orb { position:absolute; border-radius:50%; z-index:1; background:radial-gradient(circle,rgba(244,121,32,0.28),transparent 70%); animation:float 6s ease-in-out infinite; }
+    .hero-orb-1 { width:440px; height:440px; top:-110px; right:-110px; }
+    .hero-orb-2 { width:320px; height:320px; bottom:-60px; left:-90px; animation-delay:-3s; }
+    .hero-orb-3 { width:220px; height:220px; top:40%; left:30%; animation-delay:-1.5s; opacity:0.4; }
+    .hero-content { position:relative; z-index:3; text-align:center; padding:2rem; max-width:980px; width:100%; }
+    .hero-glass {
+      background:rgba(255,255,255,0.07);
+      backdrop-filter:blur(20px) saturate(1.5);
+      -webkit-backdrop-filter:blur(20px) saturate(1.5);
+      border:1px solid rgba(255,255,255,0.14);
+      border-radius:30px; padding:3.8rem 3.2rem 3.2rem;
+      box-shadow:0 24px 70px rgba(0,0,0,0.38),inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .hero-badge {
+      display:inline-flex; align-items:center; gap:8px;
+      background:rgba(244,121,32,0.22); border:1px solid rgba(244,121,32,0.5);
+      color:#ffc48a; padding:7px 22px; border-radius:100px;
+      font-size:0.92rem; letter-spacing:1.5px; text-transform:uppercase;
+      margin-bottom:1.6rem; animation:fadeInUp 0.8s ease both;
+    }
+    .hero-title {
+      font-size:clamp(2.6rem,5.5vw,4.4rem); font-weight:700; color:white;
+      line-height:1.13; margin-bottom:1.3rem;
+      animation:fadeInUp 0.8s 0.2s ease both;
+      text-shadow:0 2px 20px rgba(0,0,0,0.5);
+    }
+    .hero-title .highlight {
+      background:linear-gradient(90deg,var(--orange),var(--orange-light),var(--orange));
+      background-size:200% auto;
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      animation:shimmer 3s linear infinite;
+    }
+    .hero-subtitle {
+      font-size:clamp(1.1rem,2.2vw,1.35rem); color:rgba(255,255,255,0.87);
+      max-width:700px; margin:0 auto 2.8rem; line-height:1.78;
+      animation:fadeInUp 0.8s 0.4s ease both;
+    }
+    .hero-buttons { display:flex; gap:1.1rem; justify-content:center; flex-wrap:wrap; animation:fadeInUp 0.8s 0.6s ease both; }
+    .hero-stats {
+      display:flex; justify-content:center; gap:3rem; flex-wrap:wrap;
+      margin-top:2.8rem; padding-top:2rem;
+      border-top:1px solid rgba(255,255,255,0.13);
+      animation:fadeInUp 0.8s 0.8s ease both;
+    }
+    .stat-item { text-align:center; }
+    .stat-number { font-size:2.5rem; font-weight:700; color:var(--orange); display:block; animation:glowPulse 3s ease-in-out infinite; text-shadow:0 0 20px rgba(244,121,32,0.5); }
+    .stat-label { color:rgba(255,255,255,0.62); font-size:0.9rem; letter-spacing:1px; }
+
+    /* BUTTONS */
+    .btn-primary {
+      background:linear-gradient(135deg,var(--orange),var(--orange-dark));
+      color:white; border:none; padding:15px 34px; border-radius:9px;
+      font-family:var(--font); font-size:1.08rem; font-weight:700; cursor:pointer;
+      transition:all 0.3s ease; box-shadow:0 6px 22px rgba(244,121,32,0.5);
+      text-decoration:none; display:inline-flex; align-items:center; gap:9px;
+    }
+    .btn-primary:hover { transform:translateY(-3px) scale(1.03); box-shadow:0 12px 32px rgba(244,121,32,0.7); }
+    .btn-secondary {
+      background:rgba(255,255,255,0.1); color:white;
+      border:2px solid rgba(255,255,255,0.45); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+      padding:15px 34px; border-radius:9px;
+      font-family:var(--font); font-size:1.08rem; cursor:pointer;
+      transition:all 0.3s ease; text-decoration:none;
+      display:inline-flex; align-items:center; gap:9px;
+    }
+    .btn-secondary:hover { border-color:var(--orange); color:var(--orange); background:rgba(244,121,32,0.1); transform:translateY(-3px) scale(1.03); }
+
+    /* SECTIONS */
+    section { padding:95px 2rem; }
+    .section-tag {
+      display:inline-block; background:rgba(244,121,32,0.1);
+      color:var(--orange); border:1px solid rgba(244,121,32,0.3);
+      padding:5px 18px; border-radius:100px; font-size:0.82rem;
+      letter-spacing:2px; text-transform:uppercase; margin-bottom:1rem;
+    }
+    .section-title { font-size:clamp(1.9rem,3.5vw,3rem); font-weight:700; color:var(--navy); margin-bottom:1rem; line-height:1.2; }
+    .section-title span { color:var(--orange); }
+    .section-subtitle { font-size:1.1rem; color:#555; max-width:620px; line-height:1.75; }
+    .section-header { text-align:center; margin-bottom:4.5rem; }
+    .section-header .section-subtitle { margin:0 auto; }
+
+    /* SERVICE CARDS */
+    .services-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:2rem; max-width:1200px; margin:0 auto; }
+    .service-card {
+      background:white; border-radius:18px; padding:2.6rem 2.1rem;
+      box-shadow:0 4px 30px rgba(0,0,0,0.07); border:1px solid rgba(244,121,32,0.1);
+      transition:all 0.4s cubic-bezier(0.25,0.8,0.25,1);
+      position:relative; overflow:hidden; cursor:pointer;
+    }
+    .service-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:linear-gradient(90deg,var(--orange),var(--orange-light)); transform:scaleX(0); transform-origin:left; transition:transform 0.4s ease; }
+    .service-card:hover { transform:translateY(-9px) scale(1.02); box-shadow:0 22px 55px rgba(0,0,0,0.15); }
+    .service-card:hover::before { transform:scaleX(1); }
+    .service-icon { width:68px; height:68px; border-radius:17px; background:linear-gradient(135deg,rgba(244,121,32,0.14),rgba(244,121,32,0.04)); display:flex; align-items:center; justify-content:center; font-size:1.9rem; margin-bottom:1.6rem; transition:all 0.3s ease; }
+    .service-card:hover .service-icon { background:linear-gradient(135deg,var(--orange),var(--orange-dark)); transform:rotate(5deg) scale(1.1); }
+    .service-card:hover .service-icon i { filter:brightness(0) invert(1); }
+    .service-icon i { color:var(--orange); transition:filter 0.3s ease; }
+    .service-card h3 { font-size:1.35rem; color:var(--navy); margin-bottom:0.8rem; }
+    .service-card p { color:#666; line-height:1.75; font-size:1rem; }
+    .service-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:1.1rem; }
+    .service-tag { background:rgba(244,121,32,0.08); color:var(--orange-dark); border:1px solid rgba(244,121,32,0.2); padding:3px 11px; border-radius:100px; font-size:0.78rem; }
+
+    /* WHY SECTION */
+    .why-section { background:var(--gray-light); }
+    .why-grid { display:grid; grid-template-columns:1fr 1fr; gap:3.5rem; max-width:1200px; margin:0 auto; align-items:center; }
+    .why-big-box { border-radius:22px; padding:3.2rem; color:white; position:relative; overflow:hidden; animation:fadeInLeft 0.8s ease both; }
+    .why-big-box::after { content:''; position:absolute; top:-50%; right:-50%; width:200%; height:200%; background:radial-gradient(circle,rgba(255,255,255,0.1) 0%,transparent 60%); }
+    .why-hex { width:82px; height:82px; margin-bottom:1.6rem; background:rgba(255,255,255,0.2); clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); display:flex; align-items:center; justify-content:center; font-size:2.1rem; color:white; }
+    .why-features { display:flex; flex-direction:column; gap:1.6rem; }
+    .why-feature { display:flex; gap:1rem; align-items:flex-start; transition:transform 0.3s ease; }
+    .why-feature:hover { transform:translateX(9px); }
+    .why-feature-icon { width:46px; height:46px; min-width:46px; border-radius:11px; background:linear-gradient(135deg,var(--orange),var(--orange-dark)); display:flex; align-items:center; justify-content:center; color:white; font-size:1.15rem; }
+    .why-feature h4 { color:var(--navy); font-size:1.08rem; margin-bottom:5px; }
+    .why-feature p { color:#666; font-size:0.95rem; line-height:1.55; }
+
+    /* TESTIMONIALS */
+    .testimonials-section { background:var(--gray-light); }
+    .testimonials-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:2rem; max-width:1200px; margin:0 auto; }
+    .testimonial-card { background:white; border:1px solid rgba(244,121,32,0.15); border-radius:18px; padding:2.2rem; transition:all 0.4s ease; box-shadow:0 4px 22px rgba(0,0,0,0.06); }
+    .testimonial-card:hover { transform:translateY(-7px) scale(1.02); border-color:var(--orange); box-shadow:0 18px 44px rgba(244,121,32,0.15); }
+    .stars { color:var(--orange); margin-bottom:1rem; font-size:1rem; }
+    .testimonial-text { color:#555; line-height:1.75; font-style:italic; margin-bottom:1.5rem; font-size:1rem; }
+    .testimonial-author { display:flex; align-items:center; gap:13px; }
+    .author-avatar { width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,var(--orange),var(--orange-dark)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.15rem; color:white; }
+    .author-name { color:var(--navy); font-weight:700; font-size:1rem; }
+    .author-role { color:#888; font-size:0.85rem; }
+
+    /* PROCESS */
+    .process-section { background:white; }
+    .process-steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:2rem; max-width:1150px; margin:0 auto; }
+    .process-step { text-align:center; padding:2.2rem 1.6rem; transition:transform 0.3s ease; }
+    .process-step:hover { transform:translateY(-9px); }
+    .process-number { width:64px; height:64px; border-radius:50%; margin:0 auto 1.3rem; background:linear-gradient(135deg,var(--orange),var(--orange-dark)); display:flex; align-items:center; justify-content:center; font-size:1.4rem; color:white; box-shadow:0 6px 22px rgba(244,121,32,0.38); }
+    .process-step h4 { color:var(--navy); font-size:1.1rem; margin-bottom:0.55rem; }
+    .process-step p { color:#666; font-size:0.95rem; line-height:1.55; }
+
+    /* ABOUT STRIP */
+    .about-strip { background:linear-gradient(135deg,var(--orange),var(--orange-dark)); padding:4.5rem 2rem; text-align:center; color:white; position:relative; overflow:hidden; }
+    .about-strip::before { content:''; position:absolute; inset:0; background:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 60L60 0' stroke='rgba(255,255,255,0.05)' stroke-width='1'/%3E%3C/svg%3E") repeat; }
+    .about-strip-content { position:relative; z-index:1; max-width:820px; margin:0 auto; }
+    .about-strip h2 { font-size:2.2rem; margin-bottom:1rem; }
+    .about-strip p { font-size:1.15rem; opacity:0.92; line-height:1.75; margin-bottom:2.2rem; }
+
+    /* CONTACT */
+    .contact-section { background:var(--gray-light); }
+    .contact-grid { display:grid; grid-template-columns:1fr 1.4fr; gap:4rem; max-width:1100px; margin:0 auto; align-items:start; }
+    .contact-info h3 { font-size:1.6rem; color:var(--navy); margin-bottom:2rem; }
+    .contact-item { display:flex; gap:1rem; align-items:flex-start; margin-bottom:1.6rem; transition:transform 0.3s ease; }
+    .contact-item:hover { transform:translateX(7px); }
+    .contact-item-icon { width:48px; height:48px; min-width:48px; border-radius:13px; background:linear-gradient(135deg,var(--orange),var(--orange-dark)); display:flex; align-items:center; justify-content:center; color:white; font-size:1.15rem; }
+    .contact-item h4 { color:var(--navy); margin-bottom:3px; font-size:1rem; }
+    .contact-item p, .contact-item a { color:#666; font-size:0.95rem; text-decoration:none; }
+    .contact-item a:hover { color:var(--orange); }
+    .contact-form { background:white; border-radius:22px; padding:2.8rem; box-shadow:0 10px 44px rgba(0,0,0,0.08); border:1px solid rgba(244,121,32,0.1); }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .form-group { margin-bottom:1.3rem; }
+    .form-group label { display:block; color:var(--navy); font-size:0.95rem; font-weight:700; margin-bottom:7px; }
+    .form-group input, .form-group select, .form-group textarea { width:100%; padding:13px 17px; border-radius:11px; border:2px solid #e8ecf0; background:var(--gray-light); font-family:var(--font); font-size:1rem; color:var(--text-dark); transition:all 0.3s ease; outline:none; resize:vertical; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--orange); background:white; box-shadow:0 0 0 4px rgba(244,121,32,0.1); }
+    .form-group textarea { min-height:135px; }
+    .form-submit { width:100%; padding:16px; font-size:1.13rem; background:linear-gradient(135deg,var(--orange),var(--orange-dark)); color:white; border:none; border-radius:11px; cursor:pointer; font-family:var(--font); font-weight:700; transition:all 0.3s ease; box-shadow:0 6px 22px rgba(244,121,32,0.38); }
+    .form-submit:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(244,121,32,0.55); }
+    .form-success { text-align:center; padding:2.5rem; color:#27ae60; font-size:1.15rem; }
+
+    /* FOOTER */
+    .footer { background:var(--navy); color:white; padding:4.5rem 2rem 0; }
+    .footer-main { display:grid; grid-template-columns:2fr 1fr 1.5fr; gap:3rem; max-width:1200px; margin:0 auto; padding-bottom:3rem; border-bottom:1px solid rgba(255,255,255,0.1); }
+    .footer-brand-desc { color:rgba(255,255,255,0.65); line-height:1.9; margin:1rem 0; font-size:1rem; }
+    .footer-social { display:flex; gap:13px; margin-top:1.3rem; }
+    .footer-social a { width:42px; height:42px; border-radius:11px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.13); display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.7); font-size:1.08rem; transition:all 0.3s ease; text-decoration:none; }
+    .footer-social a:hover { background:rgba(255,255,255,0.2); border-color:rgba(255,255,255,0.55); color:white; transform:translateY(-5px) scale(1.12); text-shadow:0 0 14px rgba(255,255,255,0.85); }
+    .footer-col h4 { color:white; font-size:1.12rem; font-weight:700; margin-bottom:1.3rem; position:relative; padding-bottom:11px; }
+    .footer-col h4::after { content:''; position:absolute; bottom:0; left:0; width:32px; height:2px; background:var(--orange); }
+    .footer-links { list-style:none; }
+    .footer-links li { margin-bottom:0.75rem; }
+    .footer-links a { color:rgba(255,255,255,0.65); text-decoration:none; font-size:1rem; transition:all 0.3s ease; display:flex; align-items:center; gap:7px; }
+    .footer-links a:hover { color:white; transform:translateX(7px); text-shadow:0 0 12px rgba(255,255,255,0.65); }
+    .footer-links a::before { content:'›'; color:var(--orange); font-size:1.15rem; }
+    .footer-address { color:rgba(255,255,255,0.65); font-size:1rem; line-height:1.9; }
+    .footer-address .address-block { margin-bottom:1.1rem; display:flex; gap:11px; align-items:flex-start; }
+    .footer-address .address-block i { color:var(--orange); margin-top:4px; }
+    .footer-address a { color:rgba(255,255,255,0.65); text-decoration:none; transition:all 0.3s ease; }
+    .footer-address a:hover { color:white; text-shadow:0 0 12px rgba(255,255,255,0.65); }
+    .footer-address span { color:rgba(255,255,255,0.65); }
+    .footer-bottom { max-width:1200px; margin:0 auto; padding:1.8rem 0; text-align:center; }
+    .footer-bottom-text { color:rgba(255,255,255,0.5); font-size:0.95rem; }
+    .footer-bottom-text span { color:white; font-weight:700; }
+
+    /* WHATSAPP */
+    .whatsapp-float { position:fixed; bottom:28px; right:28px; z-index:999; width:60px; height:60px; border-radius:50%; background:linear-gradient(135deg,#25d366,#128c7e); display:flex; align-items:center; justify-content:center; color:white; font-size:1.65rem; box-shadow:0 6px 22px rgba(37,211,102,0.55); cursor:pointer; animation:waPulse 2.2s infinite; text-decoration:none; transition:transform 0.3s ease; }
+    .whatsapp-float:hover { transform:scale(1.16); }
+    .whatsapp-tooltip { position:absolute; right:72px; background:#222; color:white; padding:7px 15px; border-radius:9px; font-size:0.88rem; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.3s ease; }
+    .whatsapp-float:hover .whatsapp-tooltip { opacity:1; }
+
+    /* SCROLL ANIM */
+    .animate-on-scroll { opacity:0; transform:translateY(32px); transition:all 0.75s cubic-bezier(0.25,0.8,0.25,1); }
+    .animate-on-scroll.visible { opacity:1; transform:translateY(0); }
+    .page-enter { animation:fadeInUp 0.5s ease both; }
+
+    /* POLICY */
+    .policy-page { max-width:880px; margin:0 auto; padding:120px 2rem 90px; }
+    .policy-page h1 { font-size:2.4rem; color:var(--navy); margin-bottom:0.5rem; }
+    .policy-date { color:#aaa; font-size:0.88rem; margin-bottom:2.8rem; }
+    .policy-section { margin-bottom:2.2rem; }
+    .policy-section h2 { color:var(--navy); font-size:1.3rem; margin-bottom:0.8rem; border-left:3px solid var(--orange); padding-left:13px; }
+    .policy-section p { color:#555; line-height:1.85; font-size:1rem; }
+
+    /* MOBILE */
+    @media (max-width:768px) {
+      .header-nav { display:none; }
+      .mobile-menu-btn { display:block; }
+      .why-grid { grid-template-columns:1fr; }
+      .contact-grid { grid-template-columns:1fr; }
+      .footer-main { grid-template-columns:1fr; gap:2.2rem; }
+      .form-row { grid-template-columns:1fr; }
+      .header-company-name { font-size:1.15rem; }
+      .hero-glass { padding:2.5rem 1.5rem 2rem; }
+      .mobile-nav { position:fixed; inset:0; background:var(--navy); z-index:999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2.2rem; animation:slideDown 0.3s ease; }
+      .mobile-nav .nav-link { font-size:1.5rem; }
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const CONFIG = {
+  email:     "secureforgetech@gmail.com",
+  whatsapp:  "919518320183",
+  //instagram: "https://instagram.com/secureforgetech",
+  //facebook:  "https://facebook.com/secureforgetech",
+  linkedin:  "https://www.linkedin.com/in/secure-forge-technologies-ab3652409/",
+};
+
+function useScrollAnimation() {
+  useEffect(() => {
+    const els = document.querySelectorAll('.animate-on-scroll');
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.12 });
+    els.forEach(el => obs.observe(el));
+    return () => obs.disconnect();
+  });
+}
+
+/* ─── HEADER ─────────────────────────────────────────────── */
+function Header({ page, setPage }) {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  useEffect(() => {
+    const h = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', h);
+    return () => window.removeEventListener('scroll', h);
+  }, []);
+  const nav = p => { setPage(p); setMobileOpen(false); window.scrollTo(0,0); };
+  return (
+    <>
+      <header className={`header ${scrolled?'scrolled':''}`}>
+        <div className="header-logo" onClick={() => nav('home')}>
+          <div className="header-logo-icon"><i className="fa-solid fa-shield-halved"/></div>
+          <div>
+            <div className="header-company-name"><span>Secure</span> Forge Technologies</div>
+            {/* <div className="header-company-sub">Digital Solutions &amp; Security</div> */}
+          </div>
+        </div>
+        <nav className="header-nav">
+          {[['home','Home'],['services','Services'],['contact','Contact Us']].map(([p,l]) => (
+            <span key={p} className={`nav-link ${page===p?'active':''}`} onClick={() => nav(p)}>{l}</span>
+          ))}
+        </nav>
+        <div style={{display:'flex',alignItems:'center',gap:'0.5rem'}}>
+          <div className="header-social">
+            <a href={`mailto:${CONFIG.email}`} title="Email"><i className="fa-solid fa-envelope"/></a>
+            <a href={CONFIG.linkedin} target="_blank" rel="noreferrer" title="LinkedIn"><i className="fa-brands fa-linkedin-in"/></a>
+            {/* <a href={CONFIG.instagram} target="_blank" rel="noreferrer" title="Instagram"><i className="fa-brands fa-instagram"/></a> */}
+            {/* <a href={CONFIG.facebook} target="_blank" rel="noreferrer" title="Facebook"><i className="fa-brands fa-facebook-f"/></a> */}
+          </div>
+          <button className="mobile-menu-btn" onClick={() => setMobileOpen(!mobileOpen)}>
+            <i className={`fa-solid fa-${mobileOpen?'xmark':'bars'}`}/>
+          </button>
+        </div>
+      </header>
+      {mobileOpen && (
+        <div className="mobile-nav">
+          <button style={{position:'absolute',top:22,right:22,background:'none',border:'none',color:'white',fontSize:'1.6rem'}} onClick={() => setMobileOpen(false)}>
+            <i className="fa-solid fa-xmark"/>
+          </button>
+          {[['home','Home'],['services','Services'],['contact','Contact Us']].map(([p,l]) => (
+            <span key={p} className="nav-link" onClick={() => nav(p)}>{l}</span>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ─── WHATSAPP ───────────────────────────────────────────── */
+function WhatsAppFloat() {
+  return (
+    <a className="whatsapp-float" href={`https://wa.me/${CONFIG.whatsapp}`} target="_blank" rel="noreferrer">
+      <i className="fa-brands fa-whatsapp"/>
+      <span className="whatsapp-tooltip">Chat with us!</span>
+    </a>
+  );
+}
+
+/* ─── FOOTER ─────────────────────────────────────────────── */
+function Footer({ setPage }) {
+  const nav = p => { setPage(p); window.scrollTo(0,0); };
+  return (
+    <footer className="footer">
+      <div className="footer-main">
+        <div>
+          <div style={{display:'flex',alignItems:'center',gap:13,marginBottom:'1rem'}}>
+            <div className="header-logo-icon"><i className="fa-solid fa-shield-halved"/></div>
+            <div>
+              <div className="header-company-name"><span>Secure</span> Forge Technologies</div>
+              <div className="header-company-sub">Digital Solutions &amp; Security</div>
+            </div>
+          </div>
+          <p className="footer-brand-desc">Empowering businesses with cutting-edge web solutions, cybersecurity, and digital transformation. Your trusted technology partner.</p>
+          <div className="footer-social">
+            {/* <a href={CONFIG.instagram} target="_blank" rel="noreferrer" title="Instagram"><i className="fa-brands fa-instagram"/></a> */}
+            {/* <a href={CONFIG.facebook}  target="_blank" rel="noreferrer" title="Facebook"><i className="fa-brands fa-facebook-f"/></a> */}
+            <a href={`mailto:${CONFIG.email}`} title="Email"><i className="fa-solid fa-envelope"/></a>
+            <a href={CONFIG.linkedin}  target="_blank" rel="noreferrer" title="LinkedIn"><i className="fa-brands fa-linkedin-in"/></a>
+          </div>
+        </div>
+        <div className="footer-col">
+          <h4>Pages</h4>
+          <ul className="footer-links">
+            {[['home','Home'],['services','Services'],['contact','Contact Us'],['privacy','Privacy Policy'],['terms','Terms & Conditions']].map(([p,l]) => (
+              <li key={p}><a href="#" onClick={e=>{e.preventDefault();nav(p);}}>{l}</a></li>
+            ))}
+          </ul>
+        </div>
+        <div className="footer-col">
+          <h4>Contact</h4>
+          <div className="footer-address">
+            <div className="address-block">
+              <i className="fa-solid fa-envelope"/>
+              <a href={`mailto:${CONFIG.email}`}>{CONFIG.email}</a>
+            </div>
+            <div className="address-block">
+              <i className="fa-solid fa-location-dot"/>
+              <span>Pune</span>
+            </div>
+            <div className="address-block">
+              <i className="fa-solid fa-location-dot"/>
+              <span>Chhatrapati Sambhajinagar</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="footer-bottom">
+        <p className="footer-bottom-text">© 2025 <span>Secure Forge Technologies</span>. All rights reserved.</p>
+      </div>
+    </footer>
+  );
+}
+
+/* ─── HOME PAGE ──────────────────────────────────────────── */
+function HomePage({ setPage }) {
+  useScrollAnimation();
+
+  const slides = [
+    { url:'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1600&q=80' },
+    { url:'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1600&q=80' },
+    { url:'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1600&q=80' },
+    { url:'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600&q=80' },
+  ];
+  const [slide, setSlide] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setSlide(s => (s+1) % slides.length), 4000);
+    return () => clearInterval(t);
+  }, []);
+
+  const services = [
+    { icon:'code',           title:'Website Development',  desc:'Stunning, responsive websites built for performance, SEO, and conversion. From landing pages to enterprise portals.',      tags:['React','Next.js','WordPress'] },
+    { icon:'mobile-screen',  title:'App Development',      desc:'Cross-platform mobile and web apps that deliver seamless user experiences and drive business growth.',                     tags:['iOS','Android','Flutter'] },
+    { icon:'shield-halved',  title:'Cyber Security',       desc:'End-to-end security solutions to protect your digital assets, data, and infrastructure from modern threats.',            tags:['Penetration Testing','VAPT','SOC'] },
+    { icon:'graduation-cap', title:'Training & Consultancy',desc:'Practical tech training and expert consultancy to upskill your team and align technology with business goals.',         tags:['Workshops','Certifications','Strategy'] },
+    { icon:'chart-bar',      title:'Audits',               desc:'Comprehensive IT, security, and compliance audits to identify vulnerabilities and optimise your systems.',                 tags:['IT Audit','Security Audit','Compliance'] },
+    { icon:'bullhorn',       title:'Digital Marketing',    desc:'Data-driven digital marketing strategies to boost your online presence, leads, and brand authority.',                    tags:['SEO','Social Media','PPC'] },
+  ];
+
+  return (
+    <div className="page-enter">
+
+      {/* HERO */}
+      <section className="hero">
+        <div className="hero-slides">
+          {slides.map((s,i) => (
+            <div key={i} className={`hero-slide ${i===slide?'active':''}`} style={{backgroundImage:`url('${s.url}')`}}/>
+          ))}
+        </div>
+        <div className="hero-bg-dots"/>
+        <div className="hero-orb hero-orb-1"/>
+        <div className="hero-orb hero-orb-2"/>
+        <div className="hero-orb hero-orb-3"/>
+        <div className="hero-content">
+          <div className="hero-glass">
+            <div className="hero-badge"><i className="fa-solid fa-shield-halved"/> Trusted Technology Partner</div>
+            <h1 className="hero-title">Forging <span className="highlight">Secure</span> &amp;<br/>Powerful Digital Solutions</h1>
+            <p className="hero-subtitle">We build cutting-edge websites, apps, and cybersecurity systems to help your business thrive in the digital era. Innovation meets security.</p>
+            <div className="hero-buttons">
+              <span className="btn-primary" onClick={() => { setPage('services'); window.scrollTo(0,0); }}>
+                <i className="fa-solid fa-rocket"/> Explore Services
+              </span>
+              <span className="btn-secondary" onClick={() => { setPage('contact'); window.scrollTo(0,0); }}>
+                <i className="fa-solid fa-phone"/> Talk to Us
+              </span>
+            </div>
+            {/* <div className="hero-stats">
+              {[['200+','Projects Done'],['50+','Happy Clients'],['5+','Years Expertise'],['24/7','Support']].map(([n,l]) => (
+                <div className="stat-item" key={l}>
+                  <span className="stat-number">{n}</span>
+                  <span className="stat-label">{l}</span>
+                </div>
+              ))}
+            </div>*/}
+          </div>
+        </div>
+        <div className="hero-dots">
+          {slides.map((_,i) => <button key={i} className={`hero-dot ${i===slide?'active':''}`} onClick={() => setSlide(i)}/>)}
+        </div>
+      </section>
+
+      {/* Wave */}
+      <div style={{background:'var(--gray-light)',lineHeight:0}}>
+        <svg viewBox="0 0 1440 60" style={{display:'block'}} fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0,0 C480,60 960,0 1440,0 L1440,60 L0,60 Z" fill="#f5f7fa"/>
+        </svg>
+      </div>
+
+      {/* SERVICES */}
+      <section style={{background:'var(--gray-light)'}}>
+        <div className="section-header animate-on-scroll">
+          <div className="section-tag">What We Do</div>
+          <h2 className="section-title">Our <span>Core Services</span></h2>
+          <p className="section-subtitle">From concept to deployment — we provide end-to-end digital solutions tailored to your unique needs.</p>
+        </div>
+        <div className="services-grid">
+          {services.map((s,i) => (
+            <div className="service-card animate-on-scroll" key={s.title} style={{animationDelay:`${i*0.1}s`}}>
+              <div className="service-icon"><i className={`fa-solid fa-${s.icon}`}/></div>
+              <h3>{s.title}</h3>
+              <p>{s.desc}</p>
+              <div className="service-tags">{s.tags.map(t => <span className="service-tag" key={t}>{t}</span>)}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{textAlign:'center',marginTop:'3.5rem'}}>
+          <span className="btn-primary" onClick={() => { setPage('services'); window.scrollTo(0,0); }}>
+            View All Services <i className="fa-solid fa-arrow-right"/>
+          </span>
+        </div>
+      </section>
+
+      {/* ABOUT STRIP */}
+      <div className="about-strip animate-on-scroll">
+        <div className="about-strip-content">
+          <h2>Why Secure Forge Technologies?</h2>
+          <p>We combine technical excellence with business understanding to deliver solutions that are not just functional, but truly transformative. Our team of certified experts is committed to your success.</p>
+          <span className="btn-secondary" style={{margin:'0 auto'}} onClick={() => { setPage('contact'); window.scrollTo(0,0); }}>
+            Get Free Consultation <i className="fa-solid fa-arrow-right"/>
+          </span>
+        </div>
+      </div>
+
+      {/* WHY CHOOSE US */}
+      <section className="why-section">
+        <div className="why-grid">
+          <div>
+            <div className="why-big-box animate-on-scroll" style={{background:'linear-gradient(135deg,var(--orange),var(--orange-dark))'}}>
+              <div className="why-hex"><i className="fa-solid fa-shield-halved"/></div>
+              <h2 style={{fontSize:'1.95rem',marginBottom:'1rem'}}>Building Trust Through Technology</h2>
+              <p style={{color:'rgba(255,255,255,0.92)',lineHeight:1.82,fontSize:'1rem'}}>At Secure Forge, we don't just deliver projects — we build long-term partnerships. Every solution is crafted with precision, security, and scalability in mind.</p>
+              <div style={{marginTop:'2.2rem',display:'flex',gap:'2.5rem'}}>
+                {[['99%','Client Retention'],['48h','Response Time']].map(([v,l]) => (
+                  <div key={l}>
+                    <div style={{fontSize:'2.2rem',fontWeight:700,color:'white'}}>{v}</div>
+                    <div style={{color:'rgba(255,255,255,0.72)',fontSize:'0.88rem'}}>{l}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="why-features">
+            {[
+              {icon:'certificate', title:'Certified Experts',        desc:'Our team holds industry-leading certifications in cybersecurity, development, and digital marketing.'},
+              {icon:'lock',        title:'Security-First Approach',  desc:'Every product we build is designed with security at its core, protecting your data and users.'},
+              {icon:'bolt',        title:'Fast & Scalable Delivery', desc:'Agile methodology ensures rapid deployment without compromising on quality or performance.'},
+              {icon:'headset',     title:'24/7 Dedicated Support',   desc:'Round-the-clock support with guaranteed response times to keep your business running smoothly.'},
+            ].map((f,i) => (
+              <div className="why-feature animate-on-scroll" key={f.title} style={{animationDelay:`${i*0.15}s`}}>
+                <div className="why-feature-icon"><i className={`fa-solid fa-${f.icon}`}/></div>
+                <div><h4>{f.title}</h4><p>{f.desc}</p></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PROCESS */}
+      <section className="process-section">
+        <div className="section-header animate-on-scroll">
+          <div className="section-tag">How We Work</div>
+          <h2 className="section-title">Our <span>Process</span></h2>
+          <p className="section-subtitle">A clear, transparent, and collaborative approach to delivering exceptional results.</p>
+        </div>
+        <div className="process-steps">
+          {[
+            {icon:'magnifying-glass',title:'Discover',desc:'We understand your business goals, target audience, and technical requirements.'},
+            {icon:'pen-ruler',       title:'Design',  desc:'We create intuitive, stunning designs that align with your brand identity.'},
+            {icon:'code',            title:'Develop', desc:'Our engineers build robust, scalable, and secure solutions using latest tech.'},
+            {icon:'vial-circle-check',title:'Test',   desc:'Rigorous QA, security testing, and performance optimisation before launch.'},
+            {icon:'rocket',          title:'Launch',  desc:'We deploy, monitor, and provide ongoing support for your live product.'},
+          ].map((s,i) => (
+            <div className="process-step animate-on-scroll" key={s.title} style={{animationDelay:`${i*0.12}s`}}>
+              <div className="process-number"><i className={`fa-solid fa-${s.icon}`}/></div>
+              <h4>{s.title}</h4><p>{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* TESTIMONIALS */}
+      <section className="testimonials-section">
+        <div className="section-header animate-on-scroll">
+          <div className="section-tag">Client Love</div>
+          <h2 className="section-title">What Our <span>Clients Say</span></h2>
+          <p className="section-subtitle">Real stories from real businesses that we've helped grow.</p>
+        </div>
+        <div className="testimonials-grid">
+          {[
+            {q:'Secure Forge transformed our outdated website into a high-converting digital powerhouse. The team was professional, communicative and delivered beyond expectations.',  a:'Sagar Kolapkar', r:'CEO, Square Feet Group',  s:5},
+            {q:'Their cybersecurity audit uncovered critical vulnerabilities we never knew existed. Within weeks, our infrastructure was completely secured. Exceptional work!',          a:'Priya Sharma',   r:'CTO, FinEdge Solutions',  s:5},
+            {q:"The digital marketing campaign they ran tripled our organic traffic in 3 months. Best ROI we've seen from any agency.",                                                  a:'Amit Kulkarni',  r:'Founder, GrowthBox',      s:5},
+          ].map((t,i) => (
+            <div className="testimonial-card animate-on-scroll" key={i} style={{animationDelay:`${i*0.15}s`}}>
+              <div className="stars">{'★'.repeat(t.s)}</div>
+              <p className="testimonial-text">"{t.q}"</p>
+              <div className="testimonial-author">
+                <div className="author-avatar">{t.a[0]}</div>
+                <div><div className="author-name">{t.a}</div><div className="author-role">{t.r}</div></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section style={{background:'white',textAlign:'center',padding:'6.5rem 2rem'}}>
+        <div className="animate-on-scroll">
+          <div className="section-tag">Ready to Start?</div>
+          <h2 style={{color:'var(--navy)',fontSize:'clamp(2rem,4vw,2.8rem)',margin:'1rem 0'}}>
+            Let's Build Something <span style={{color:'var(--orange)'}}>Amazing</span>
+          </h2>
+          <p style={{color:'#555',maxWidth:580,margin:'0 auto 2.8rem',lineHeight:1.8,fontSize:'1.08rem'}}>
+            Contact us today for a free consultation and discover how Secure Forge can accelerate your digital journey.
+          </p>
+          <div style={{display:'flex',gap:'1.1rem',justifyContent:'center',flexWrap:'wrap'}}>
+            <span className="btn-primary" onClick={() => { setPage('contact'); window.scrollTo(0,0); }}>
+              <i className="fa-solid fa-envelope"/> Get In Touch
+            </span>
+            <a href={`https://wa.me/${CONFIG.whatsapp}`} target="_blank" rel="noreferrer"
+              style={{background:'transparent',color:'#25d366',border:'2px solid #25d366',padding:'15px 34px',borderRadius:'9px',fontFamily:'var(--font)',fontSize:'1.08rem',cursor:'pointer',transition:'all 0.3s ease',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:'9px'}}
+              onMouseEnter={e=>{e.currentTarget.style.background='#25d366';e.currentTarget.style.color='white';e.currentTarget.style.transform='translateY(-3px)';}}
+              onMouseLeave={e=>{e.currentTarget.style.background='transparent';e.currentTarget.style.color='#25d366';e.currentTarget.style.transform='none';}}
+            >
+              <i className="fa-brands fa-whatsapp"/> WhatsApp Us
+            </a>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/* ─── SERVICES PAGE ──────────────────────────────────────── */
+function ServicesPage({ setPage }) {
+  useScrollAnimation();
+  const services = [
+    {icon:'code',          title:'Website Development',  color:'#e8f4ff',
+     desc:'We craft modern, fast, and visually stunning websites that captivate visitors and convert them into customers.',
+     features:['Custom UI/UX Design','Responsive & Mobile-First','SEO Optimised','CMS Integration','E-commerce Solutions','Performance Tuning'],
+     tags:['React','Next.js','WordPress','Node.js']},
+    {icon:'mobile-screen', title:'App Development',      color:'#fff4e8',
+     desc:'We build native and cross-platform mobile applications that deliver smooth, intuitive experiences across iOS and Android.',
+     features:['iOS & Android Apps','Cross-Platform (Flutter/RN)','API Integration','Offline Support','Push Notifications','App Store Optimisation'],
+     tags:['Flutter','React Native','Swift','Kotlin']},
+    {icon:'shield-halved', title:'Cyber Security',       color:'#e8fff0',
+     desc:'Comprehensive security solutions to protect your business from cyber threats. Our certified experts identify vulnerabilities before attackers do.',
+     features:['Penetration Testing','VAPT Assessments','Network Security','Endpoint Protection','Incident Response','Security Training'],
+     tags:['VAPT','SOC','SIEM','ISO 27001']},
+    {icon:'graduation-cap',title:'Training & Consultancy',color:'#f4e8ff',
+     desc:'Upskill your workforce and align technology with business strategy through our expert-led training programs.',
+     features:['Custom Training Programs','Ethical Hacking Workshops','Cloud & DevOps Training','IT Strategy Consulting','Digital Transformation','Team Upskilling'],
+     tags:['Workshops','Certifications','Corporate','Online']},
+    {icon:'chart-bar',     title:'Audits',               color:'#fff8e8',
+     desc:'Deep-dive audits giving a comprehensive picture of your IT infrastructure, security posture, and compliance status.',
+     features:['IT Infrastructure Audit','Security Audit','Code Review','Compliance Audit (GDPR, ISO)','Performance Audit','Third-Party Risk Assessment'],
+     tags:['GDPR','ISO 27001','PCI-DSS','SOC2']},
+    {icon:'bullhorn',      title:'Digital Marketing',    color:'#e8f8ff',
+     desc:'Data-driven digital marketing that builds your brand, drives qualified traffic, and delivers measurable ROI.',
+     features:['Search Engine Optimisation','Google & Meta Ads','Social Media Management','Content Marketing','Email Campaigns','Analytics & Reporting'],
+     tags:['SEO','PPC','Social Media','Content']},
+  ];
+  return (
+    <div className="page-enter" style={{paddingTop:'72px'}}>
+      <section style={{background:'linear-gradient(135deg,#ffffff 0%,#fff8f2 100%)',padding:'5rem 2rem 4rem',textAlign:'center',position:'relative',overflow:'hidden',borderBottom:'1px solid rgba(244,121,32,0.1)'}}>
+        <div style={{position:'absolute',inset:0,opacity:0.05,backgroundImage:'radial-gradient(circle,var(--orange) 1px,transparent 1px)',backgroundSize:'40px 40px'}}/>
+        <div style={{position:'relative',zIndex:1}}>
+          <div className="hero-badge" style={{display:'inline-flex',marginBottom:'1rem'}}><i className="fa-solid fa-layer-group"/> All Services</div>
+          <h1 style={{fontSize:'clamp(2.1rem,4.5vw,3.4rem)',color:'var(--navy)',fontWeight:700,marginBottom:'1rem'}}>
+            Our <span style={{color:'var(--orange)'}}>Digital Services</span>
+          </h1>
+          <p style={{color:'#555',maxWidth:600,margin:'0 auto',fontSize:'1.15rem',lineHeight:1.75}}>
+            Comprehensive technology solutions — from development to security — all under one trusted roof.
+          </p>
+        </div>
+      </section>
+      <section style={{background:'white'}}>
+        <div style={{maxWidth:1200,margin:'0 auto'}}>
+          {services.map((s,i) => (
+            <div key={s.title} className="animate-on-scroll" style={{display:'grid',gridTemplateColumns:i%2===0?'1fr 1.2fr':'1.2fr 1fr',gap:'3.5rem',alignItems:'center',marginBottom:'5.5rem'}}>
+              <div style={{order:i%2===0?0:1}}>
+                <div style={{background:`linear-gradient(135deg,${s.color},white)`,borderRadius:22,padding:'3rem',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',minHeight:290,border:'1px solid rgba(244,121,32,0.12)',transition:'transform 0.35s ease',cursor:'default'}}
+                  onMouseEnter={e=>e.currentTarget.style.transform='scale(1.04)'}
+                  onMouseLeave={e=>e.currentTarget.style.transform='scale(1)'}>
+                  <div style={{width:96,height:96,borderRadius:26,background:'linear-gradient(135deg,var(--orange),var(--orange-dark))',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'2.7rem',color:'white',marginBottom:'1.6rem',boxShadow:'0 12px 32px rgba(244,121,32,0.38)'}}>
+                    <i className={`fa-solid fa-${s.icon}`}/>
+                  </div>
+                  <h3 style={{color:'var(--navy)',fontSize:'1.5rem',textAlign:'center'}}>{s.title}</h3>
+                  <div className="service-tags" style={{justifyContent:'center',marginTop:'1.1rem'}}>
+                    {s.tags.map(t => <span className="service-tag" key={t}>{t}</span>)}
+                  </div>
+                </div>
+              </div>
+              <div style={{order:i%2===0?1:0}}>
+                <div className="section-tag">{s.title}</div>
+                <h2 className="section-title" style={{fontSize:'2.1rem'}}>{s.title}</h2>
+                <p style={{color:'#555',lineHeight:1.82,marginBottom:'1.6rem',fontSize:'1.05rem'}}>{s.desc}</p>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'0.7rem',marginBottom:'1.8rem'}}>
+                  {s.features.map(f => (
+                    <div key={f} style={{display:'flex',alignItems:'center',gap:9}}>
+                      <i className="fa-solid fa-check" style={{color:'var(--orange)',fontSize:'0.9rem'}}/>
+                      <span style={{color:'#444',fontSize:'0.97rem'}}>{f}</span>
+                    </div>
+                  ))}
+                </div>
+                <span className="btn-primary" onClick={() => { setPage('contact'); window.scrollTo(0,0); }}>
+                  Get a Quote <i className="fa-solid fa-arrow-right"/>
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+      <div className="about-strip animate-on-scroll">
+        <div className="about-strip-content">
+          <h2>Ready to Transform Your Business?</h2>
+          <p>Contact our team today for a free consultation and custom project estimate. No obligations, just insights.</p>
+          <span className="btn-secondary" style={{margin:'0 auto'}} onClick={() => { setPage('contact'); window.scrollTo(0,0); }}>
+            Start Your Project <i className="fa-solid fa-arrow-right"/>
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── CONTACT PAGE ───────────────────────────────────────── */
+function ContactPage() {
+  useScrollAnimation();
+  const [form, setForm]     = useState({name:'',email:'',service:'',message:'', 'contact no': ''});
+  const [status, setStatus] = useState('idle');
+  const handleChange = e => setForm(p => ({...p,[e.target.name]:e.target.value}));
+  const handleSubmit = async e => {
+    e.preventDefault(); setStatus('sending');
+    const FORMSPREE_ID = 'xpwzgkjd'; // ← Replace with YOUR Formspree form ID
+    try {
+      const res = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({...form,_replyto:form.email})
+      });
+      if (res.ok) { setStatus('success'); setForm({name:'',email:'',service:'',message:'', 'contact no': ''}); }
+      else setStatus('error');
+    } catch { setStatus('error'); }
+  };
+  return (
+    <div className="page-enter" style={{paddingTop:'72px'}}>
+      <section style={{background:'linear-gradient(135deg,#ffffff 0%,#fff8f2 100%)',padding:'5rem 2rem 4rem',textAlign:'center',position:'relative',overflow:'hidden',borderBottom:'1px solid rgba(244,121,32,0.1)'}}>
+        <div style={{position:'absolute',inset:0,opacity:0.05,backgroundImage:'radial-gradient(circle,var(--orange) 1px,transparent 1px)',backgroundSize:'40px 40px'}}/>
+        <div style={{position:'relative',zIndex:1}}>
+          <div className="hero-badge"><i className="fa-solid fa-envelope"/> Contact Us</div>
+          <h1 style={{fontSize:'clamp(2.1rem,4.5vw,3.2rem)',color:'var(--navy)',fontWeight:700,marginBottom:'1rem'}}>
+            Get In <span style={{color:'var(--orange)'}}>Touch</span>
+          </h1>
+          <p style={{color:'#555',maxWidth:560,margin:'0 auto',fontSize:'1.15rem',lineHeight:1.75}}>
+            Have a project in mind? We'd love to hear from you. Our team will respond within 24 hours.
+          </p>
+        </div>
+      </section>
+      <section className="contact-section">
+        <div className="contact-grid">
+          <div className="contact-info animate-on-scroll">
+            <h3>Contact Information</h3>
+            {[
+              {icon:'envelope',     title:'Email Us',                  content:CONFIG.email,    href:`mailto:${CONFIG.email}`},
+              {icon:'location-dot', title:'Pune',                      content:'Maharashtra'},
+              {icon:'location-dot', title:'Chhatrapati Sambhajinagar', content:'Maharashtra'},
+            ].map(c => (
+              <div className="contact-item" key={c.title}>
+                <div className="contact-item-icon"><i className={`fa-solid fa-${c.icon}`}/></div>
+                <div>
+                  <h4>{c.title}</h4>
+                  {c.href ? <a href={c.href}>{c.content}</a> : <p>{c.content}</p>}
+                </div>
+              </div>
+            ))}
+            <div style={{marginTop:'2rem'}}>
+              <h4 style={{color:'var(--navy)',marginBottom:'1rem',fontSize:'1.05rem'}}>Connect With Us</h4>
+              <div style={{display:'flex',gap:'12px'}}>
+                {[
+                  // {icon:'brands fa-instagram', href:CONFIG.instagram,        label:'Instagram'},
+                  // {icon:'brands fa-facebook-f',href:CONFIG.facebook,         label:'Facebook'},
+                  {icon:'solid fa-envelope',   href:`mailto:${CONFIG.email}`,label:'Email'},
+                  {icon:'brands fa-linkedin-in',href:CONFIG.linkedin,         label:'LinkedIn'},
+                ].map(s => (
+                  <a key={s.label} href={s.href} target="_blank" rel="noreferrer" title={s.label}
+                    style={{width:44,height:44,borderRadius:11,background:'var(--orange)',display:'flex',alignItems:'center',justifyContent:'center',color:'white',fontSize:'1.05rem',transition:'all 0.3s ease',textDecoration:'none'}}
+                    onMouseEnter={e=>{e.currentTarget.style.background='var(--orange-dark)';e.currentTarget.style.transform='translateY(-4px)';}}
+                    onMouseLeave={e=>{e.currentTarget.style.background='var(--orange)';e.currentTarget.style.transform='translateY(0)';}}
+                  ><i className={`fa-${s.icon}`}/></a>
+                ))}
+              </div>
+            </div>
+            <a href={`https://wa.me/${CONFIG.whatsapp}`} target="_blank" rel="noreferrer" style={{display:'flex',alignItems:'center',gap:14,marginTop:'2rem',background:'linear-gradient(135deg,#25d366,#128c7e)',borderRadius:15,padding:'1.1rem 1.6rem',textDecoration:'none',transition:'transform 0.3s ease,box-shadow 0.3s ease',boxShadow:'0 6px 22px rgba(37,211,102,0.3)'}}
+              onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-4px)';e.currentTarget.style.boxShadow='0 14px 32px rgba(37,211,102,0.5)';}}
+              onMouseLeave={e=>{e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='0 6px 22px rgba(37,211,102,0.3)';}}>
+              <i className="fa-brands fa-whatsapp" style={{fontSize:'2.2rem',color:'white'}}/>
+              <div>
+                <div style={{color:'white',fontWeight:700,fontSize:'1.05rem'}}>Chat on WhatsApp</div>
+                <div style={{color:'rgba(255,255,255,0.82)',fontSize:'0.85rem'}}>Usually responds within minutes</div>
+              </div>
+            </a>
+          </div>
+          <div className="contact-form animate-on-scroll">
+            <h3 style={{color:'var(--navy)',marginBottom:'0.5rem',fontSize:'1.6rem'}}>Send Us a Message</h3>
+            <p style={{color:'#888',marginBottom:'1.6rem',fontSize:'0.98rem'}}>Fill in the form and we'll get back to you within 24 hours.</p>
+            {status==='success' ? (
+              <div className="form-success">
+                <i className="fa-solid fa-circle-check" style={{fontSize:'3.5rem',display:'block',marginBottom:'1rem'}}/>
+                <strong style={{fontSize:'1.2rem'}}>Message Sent Successfully!</strong>
+                <span style={{fontSize:'0.98rem',color:'#555',marginTop:'0.6rem',display:'block'}}>Thank you for reaching out. We'll be in touch within 24 hours.</span>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit}>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Full Name *</label>
+                    <input name="name" placeholder="Your full name" required value={form.name} onChange={handleChange}/>
+                  </div>
+                  <div className="form-group">
+                    <label>Email Address *</label>
+                    <input name="email" type="email" placeholder="your@email.com" required value={form.email} onChange={handleChange}/>
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Service Interested In</label>
+                  <select name="service" value={form.service} onChange={handleChange}>
+                    <option value="">Select a service...</option>
+                    <option>Website Development</option>
+                    <option>App Development</option>
+                    <option>Cyber Security</option>
+                    <option>Training &amp; Consultancy</option>
+                    <option>Audits</option>
+                    <option>Digital Marketing</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Contact Number</label>
+                  <input name="contact no" type="tel" placeholder="+91 0000000000" value={form['contact no']} onChange={handleChange}/>
+                </div>  
+                <div className="form-group">
+                  <label>Your Message *</label>
+                  <textarea name="message" placeholder="Tell us about your project or requirements..." required value={form.message} onChange={handleChange}/>
+                </div>
+                <button className="form-submit" type="submit" disabled={status==='sending'}>
+                  {status==='sending'?<><i className="fa-solid fa-spinner fa-spin"/> Sending...</>:<><i className="fa-solid fa-paper-plane"/> Send Message</>}
+                </button>
+                {status==='error' && <p style={{color:'red',marginTop:'1rem',textAlign:'center',fontSize:'0.95rem'}}>Something went wrong. Please try again or email us directly.</p>}
+                <p style={{textAlign:'center',color:'#aaa',fontSize:'0.82rem',marginTop:'1rem'}}>
+                  <i className="fa-solid fa-lock"/> Your information is secure and will never be shared.
+                </p>
+              </form>
+            )}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/* ─── PRIVACY ────────────────────────────────────────────── */
+function PrivacyPage() {
+  useEffect(() => window.scrollTo(0,0),[]);
+  return (
+    <div className="page-enter">
+      <div className="policy-page">
+        <div className="section-tag">Legal</div>
+        <h1>Privacy Policy</h1>
+        <p className="policy-date">Last updated: January 1, 2025</p>
+        {[
+          {h:'1. Information We Collect',      p:'We collect information you provide directly — name, email address, and message content via our contact form. We also collect usage data through analytics tools.'},
+          {h:'2. How We Use Your Information', p:'We use collected information to respond to inquiries, send communications (with consent), improve our services, comply with legal obligations, and prevent fraud.'},
+          {h:'3. Information Sharing',         p:'Secure Forge Technologies does not sell, trade, or rent personal information. We may share data with trusted service providers under confidentiality agreements.'},
+          {h:'4. Cookies',                     p:'Our website uses cookies to enhance browsing experience. You may disable cookies through browser settings, though this may affect certain functionality.'},
+          {h:'5. Data Security',               p:'We implement industry-standard security measures. No method of Internet transmission is 100% secure, and we cannot guarantee absolute security.'},
+          {h:'6. Your Rights',                 p:'You have the right to access, update, or delete your personal information. Contact us at the email address below to exercise these rights.'},
+          {h:'7. Contact',                     p:`For privacy-related queries, contact us at: ${CONFIG.email}`},
+        ].map(s => <div className="policy-section" key={s.h}><h2>{s.h}</h2><p>{s.p}</p></div>)}
+      </div>
+    </div>
+  );
+}
+
+/* ─── TERMS ──────────────────────────────────────────────── */
+function TermsPage() {
+  useEffect(() => window.scrollTo(0,0),[]);
+  return (
+    <div className="page-enter">
+      <div className="policy-page">
+        <div className="section-tag">Legal</div>
+        <h1>Terms &amp; Conditions</h1>
+        <p className="policy-date">Effective Date: January 1, 2025</p>
+        {[
+          {h:'1. Acceptance of Terms',     p:'By accessing and using Secure Forge Technologies website and services, you accept and agree to be bound by these Terms and Conditions.'},
+          {h:'2. Services',                p:'Secure Forge Technologies provides web development, app development, cybersecurity, training & consultancy, IT audits, and digital marketing services.'},
+          {h:'3. Intellectual Property',   p:'All website content is the property of Secure Forge Technologies and protected by applicable intellectual property laws. Reproduction requires prior written consent.'},
+          {h:'4. User Responsibilities',   p:'You agree to use our services only for lawful purposes and must not transmit harmful, offensive, or unlawful content.'},
+          {h:'5. Limitation of Liability', p:'Secure Forge Technologies shall not be liable for any indirect or consequential damages. Our total liability shall not exceed fees paid for the specific service.'},
+          {h:'6. Confidentiality',         p:'Both parties agree to maintain confidentiality of proprietary information shared during a project. This obligation survives termination of any agreement.'},
+          {h:'7. Governing Law',           p:'These terms are governed by the laws of Maharashtra, India. Disputes shall be subject to exclusive jurisdiction of courts in Pune, Maharashtra.'},
+          {h:'8. Changes to Terms',        p:'We reserve the right to modify these terms at any time. Continued use constitutes acceptance of the revised terms.'},
+        ].map(s => <div className="policy-section" key={s.h}><h2>{s.h}</h2><p>{s.p}</p></div>)}
+      </div>
+    </div>
+  );
+}
+
+/* ─── APP ────────────────────────────────────────────────── */
+function App() {
+  const [page, setPage] = useState('home');
+  const render = () => {
+    switch(page) {
+      case 'home':     return <HomePage     setPage={setPage}/>;
+      case 'services': return <ServicesPage setPage={setPage}/>;
+      case 'contact':  return <ContactPage/>;
+      case 'privacy':  return <PrivacyPage/>;
+      case 'terms':    return <TermsPage/>;
+      default:         return <HomePage     setPage={setPage}/>;
+    }
+  };
+  return (
+    <>
+      <Header page={page} setPage={setPage}/>
+      <main>{render()}</main>
+      <Footer setPage={setPage}/>
+      <WhatsAppFloat/>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
