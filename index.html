@@ -795,7 +795,7 @@ function ContactPage() {
   const handleChange = e => setForm(p => ({...p,[e.target.name]:e.target.value}));
   const handleSubmit = async e => {
     e.preventDefault(); setStatus('sending');
-    const FORMSPREE_ID = 'xpwzgkjd'; // ← Replace with YOUR Formspree form ID
+    const FORMSPREE_ID = 'xaqvvokk'; // ← Replace with YOUR Formspree form ID
     try {
       const res = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`,{
         method:'POST',headers:{'Content-Type':'application/json'},
